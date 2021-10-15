@@ -64,18 +64,10 @@ $tanggal_akhir = '2019-08-31';
 
 $query = mysqli_query(
     $conn,
-    'SELECT akun.id, akun.nama, dt.tanggal, dt.debit
+    'SELECT akun.id, akun.nama, dt.tanggal, (dt.debit - dt.kredit) as hasil
 FROM acc_trans_detail dt, acc_m_akun akun 
 WHERE akun.id = dt.m_akun_id AND dt.tanggal BETWEEN "' . $tanggal_awal . '" AND "' . $tanggal_akhir . '" '
 );
-
-$arr_nama = [];
-foreach ($query as $row_nama) {
-    // $arr_nama['id'][] = $row_nama['id'];
-    // $arr_nama['nama'][] = $row_nama['nama'];
-    // $arr_nama['tanggal'][] = $row_nama['tanggal'];
-    $arr_nama[] = $row_nama['nama'];
-}
 
 // Function to get all the dates in given range
 function getDatesFromRange($start, $end, $format = 'Y-m-d')
@@ -102,30 +94,36 @@ function getDatesFromRange($start, $end, $format = 'Y-m-d')
     return $array;
 }
 $tanggal = getDatesFromRange($tanggal_awal, $tanggal_akhir);
-print_r($tanggal);
 ?>
 
 <body>
     <table class="table table-striped table-bordered ">
         <tr>
             <td rowspan="3" style="vertical-align: middle;">Nama Akun</td>
-            <td colspan="30" class="text-center">Jumlah Rekapan</td>
+            <td colspan="31" class="text-center">Jumlah Rekapan</td>
         </tr>
         <tr>
-            <td colspan="30" class="text-center">Tanggal</td>
+            <td colspan="31" class="text-center">Tanggal</td>
         </tr>
         <tr>
-            <?php for ($i = 1; $i <= 30; $i++) { ?>
+            <?php for ($i = 1; $i <= 31; $i++) { ?>
                 <td class="text-center"><?php echo $i; ?></td>
             <?php } ?>
         </tr>
-        <tr>
-                <td><?php echo $arr_nama[0]; ?></td>
-                <?php for ($i = 1; $i <= 30; $i++) { ?>
-                    <td class="text-center"><?php echo $i; ?></td>
-            <?php }
-            ?>
-        </tr>
+        <?php foreach ($query as $row) { ?>
+            <tr>
+                <td><?php echo $row['nama']; ?></td>
+                <?php for ($i = 0; $i < sizeof($tanggal); $i++) { ?>
+                    <?php if ($tanggal[$i] == $row['tanggal']) { ?>
+                        <td class="text-center"><?php echo "Rp.". rupiah($row['hasil']); ?></td>
+                <?php }else{
+                    ?>
+                    <td class="text-center">0,00</td>
+                    <?php
+                }
+                } ?>
+            </tr>
+        <?php } ?>
     </table>
 
 </body>
